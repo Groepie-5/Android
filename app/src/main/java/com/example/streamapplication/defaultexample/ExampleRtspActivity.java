@@ -28,8 +28,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.rtplibrary.rtsp.RtspCamera1;
-import com.pedro.rtpstreamer.R;
-import com.pedro.rtpstreamer.utils.PathUtils;
+import com.example.streamapplication.R;
+import com.example.streamapplication.utils.PathUtils;
 import com.pedro.rtsp.utils.ConnectCheckerRtsp;
 
 import org.jetbrains.annotations.NotNull;
