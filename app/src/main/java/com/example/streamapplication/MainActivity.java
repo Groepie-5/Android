@@ -171,6 +171,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission)
                         != PackageManager.PERMISSION_GRANTED) {
+                    System.out.println(permission + "hoi");
                     return false;
                 }
             }
