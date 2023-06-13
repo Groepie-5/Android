@@ -95,6 +95,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 //        createList();
 //        setListAdapter(activities);
         btn = findViewById(R.id.tv_start_streaming);
+
+        btn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent activityChangeIntent = new Intent(MainActivity.this, ExampleRtmpActivity.class);
+                MainActivity.this.startActivity(activityChangeIntent);
+            }
+        });
         requestPermissions();
     }
 
