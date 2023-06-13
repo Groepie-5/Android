@@ -72,6 +72,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
     rtmpCamera1 = new RtmpCamera1(surfaceView, this);
     rtmpCamera1.setReTries(10);
     surfaceView.getHolder().addCallback(this);
+    getSupportActionBar().hide();
   }
 
   @Override
