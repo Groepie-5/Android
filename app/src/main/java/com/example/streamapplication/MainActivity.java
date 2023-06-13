@@ -17,21 +17,24 @@
 package com.example.streamapplication;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -53,15 +56,12 @@ import android.widget.Toast;
 //import com.pedro.rtpstreamer.utils.ActivityLink;
 //import com.pedro.rtpstreamer.utils.ImageAdapter;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import static android.os.Build.VERSION_CODES.JELLY_BEAN;
 import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import com.example.streamapplication.defaultexample.ExampleRtmpActivity;
-import com.example.streamapplication.defaultexample.ExampleRtspActivity;
 import com.example.streamapplication.utils.*;
 import com.pedro.rtsp.BuildConfig;
 
@@ -98,11 +98,57 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         btn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                Intent activityChangeIntent = new Intent(MainActivity.this, ExampleRtmpActivity.class);
-                MainActivity.this.startActivity(activityChangeIntent);
+                showAlertDialog();
             }
         });
         requestPermissions();
+    }
+
+    public void showAlertDialog() {
+        AlertDialog.Builder authenticate = new AlertDialog.Builder(this);
+        authenticate.setTitle("Authenticate Yourself");
+        authenticate.setMessage("Input your Streamer Name and Secret Key if it is not set.");
+        Context context = authenticate.getContext();
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+// Add a TextView here for the "Title" label, as noted in the comments
+        final EditText nameBox = new EditText(context);
+        nameBox.setHint("Streamer Name");
+        layout.addView(nameBox); // Notice this is an add method
+
+// Add another TextView here for the "Description" label
+        final EditText secretKeyBox = new EditText(context);
+        secretKeyBox.setHint("Secret Key");
+        layout.addView(secretKeyBox); // Another add method
+        authenticate.setView(layout);
+        authenticate.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String streamerName = nameBox.getText().toString();
+                String secretKey = secretKeyBox.getText().toString();
+
+                if (streamerName.equals("bob") && secretKey.equals("geheim")) {
+
+                    Intent activityChangeIntent = new Intent(MainActivity.this, ExampleRtmpActivity.class);
+                    activityChangeIntent.putExtra("streamerName", streamerName); //Optional parameters
+                    activityChangeIntent.putExtra("secretKey", secretKey); //Optional parameters
+                    MainActivity.this.startActivity(activityChangeIntent);
+                    overridePendingTransition(R.transition.slide_in, R.transition.slide_out);
+                } else {
+                    Toast toast = Toast.makeText(MainActivity.this, "Not Validated", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+
+            }
+        });
+        authenticate.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+
+            }
+        });
+        authenticate.create().show();
     }
 
     private void requestPermissions() {

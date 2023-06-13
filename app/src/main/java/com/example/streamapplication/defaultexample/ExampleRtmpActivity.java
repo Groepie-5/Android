@@ -16,6 +16,7 @@
 
 package com.example.streamapplication.defaultexample;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -72,6 +73,13 @@ public class ExampleRtmpActivity extends AppCompatActivity
     rtmpCamera1 = new RtmpCamera1(surfaceView, this);
     rtmpCamera1.setReTries(10);
     surfaceView.getHolder().addCallback(this);
+
+    Intent intent = getIntent();
+    String streamerName = intent.getStringExtra("streamerName"); //if it's a string you stored.
+    String secretKey = intent.getStringExtra("secretKey"); //if it's a string you stored.
+
+    Toast toast = Toast.makeText(this /* MyActivity */, "Your streamername is: "+ streamerName + "\n Your Secretkey is: "+ secretKey, Toast.LENGTH_LONG);
+    toast.show();
   }
 
   @Override
