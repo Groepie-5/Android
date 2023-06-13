@@ -16,9 +16,12 @@
 
 package com.example.streamapplication.defaultexample;
 
-import android.os.Build;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.TextUtils;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -26,30 +29,46 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.example.streamapplication.ChatAdapter;
 import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.rtmp.utils.ConnectCheckerRtmp;
 import com.pedro.rtplibrary.rtmp.RtmpCamera1;
 import com.example.streamapplication.R;
 import com.example.streamapplication.utils.PathUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-/**
- * More documentation see:
- * {@link com.pedro.rtplibrary.base.Camera1Base}
- * {@link com.pedro.rtplibrary.rtmp.RtmpCamera1}
- */
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
+
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+
 public class ExampleRtmpActivity extends AppCompatActivity
     implements ConnectCheckerRtmp, View.OnClickListener, SurfaceHolder.Callback {
 
   private RtmpCamera1 rtmpCamera1;
-  private Button button;
-  private Button bRecord;
+  private Button startStopButton;
+  private Button sendButton;
+  private RecyclerView chatBox;
+  private ArrayList<String> mMessages;
+  protected ChatAdapter chatAdapter;
+
+  private Socket mSocket;
+  {
+    try {
+      mSocket = IO.socket("http://145.49.2.224:3000/");
+    } catch (URISyntaxException e) {
+      System.out.println(e);
+    }
+  }
   private EditText etUrl;
+  private EditText chatInput;
 
   private String currentDateAndTime = "";
   private File folder;
@@ -61,17 +80,41 @@ public class ExampleRtmpActivity extends AppCompatActivity
     setContentView(R.layout.activity_example);
     folder = PathUtils.getRecordPath();
     SurfaceView surfaceView = findViewById(R.id.surfaceView);
-    button = findViewById(R.id.b_start_stop);
-    button.setOnClickListener(this);
-    bRecord = findViewById(R.id.b_record);
-    bRecord.setOnClickListener(this);
+
+    // Initialize dataset, this data would usually come from a local content provider or
+    // remote server.
+    initDataset();
+
+    startStopButton = findViewById(R.id.b_start_stop);
+    startStopButton.setOnClickListener(this);
+
+    sendButton = findViewById(R.id.send_button);
+    sendButton.setOnClickListener(this);
+
+    chatBox = findViewById(R.id.chat_box);
+    chatBox.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+    chatAdapter = new ChatAdapter(mMessages);
+    chatBox.setAdapter(chatAdapter);
+
     Button switchCamera = findViewById(R.id.switch_camera);
     switchCamera.setOnClickListener(this);
+
     etUrl = findViewById(R.id.et_rtp_url);
     etUrl.setHint(R.string.hint_rtmp);
+
+    chatInput = findViewById(R.id.chat_input);
+
     rtmpCamera1 = new RtmpCamera1(surfaceView, this);
     rtmpCamera1.setReTries(10);
+
     surfaceView.getHolder().addCallback(this);
+
+    mSocket.on("message-broadcast", onNewMessage);
+    mSocket.connect();
+  }
+
+  private void initDataset() {
+    mMessages = new ArrayList<>();
   }
 
   @Override
@@ -80,28 +123,20 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
   @Override
   public void onConnectionSuccessRtmp() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(ExampleRtmpActivity.this, "Connection success", Toast.LENGTH_SHORT).show();
-      }
-    });
+    runOnUiThread(() -> Toast.makeText(ExampleRtmpActivity.this, "Connection success", Toast.LENGTH_SHORT).show());
   }
 
   @Override
   public void onConnectionFailedRtmp(final String reason) {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        if (rtmpCamera1.reTry(5000, reason, null)) {
-          Toast.makeText(ExampleRtmpActivity.this, "Retry", Toast.LENGTH_SHORT)
-              .show();
-        } else {
-          Toast.makeText(ExampleRtmpActivity.this, "Connection failed. " + reason, Toast.LENGTH_SHORT)
-              .show();
-          rtmpCamera1.stopStream();
-          button.setText(R.string.start_button);
-        }
+    runOnUiThread(() -> {
+      if (rtmpCamera1.reTry(5000, reason, null)) {
+        Toast.makeText(ExampleRtmpActivity.this, "Retry", Toast.LENGTH_SHORT)
+            .show();
+      } else {
+        Toast.makeText(ExampleRtmpActivity.this, "Connection failed. " + reason, Toast.LENGTH_SHORT)
+            .show();
+        rtmpCamera1.stopStream();
+        startStopButton.setText(R.string.start_button);
       }
     });
   }
@@ -113,34 +148,21 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
   @Override
   public void onDisconnectRtmp() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(ExampleRtmpActivity.this, "Disconnected", Toast.LENGTH_SHORT).show();
-      }
-    });
+    runOnUiThread(() -> Toast.makeText(ExampleRtmpActivity.this, "Disconnected", Toast.LENGTH_SHORT).show());
   }
 
   @Override
   public void onAuthErrorRtmp() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(ExampleRtmpActivity.this, "Auth error", Toast.LENGTH_SHORT).show();
-        rtmpCamera1.stopStream();
-        button.setText(R.string.start_button);
-      }
+    runOnUiThread(() -> {
+      Toast.makeText(ExampleRtmpActivity.this, "Auth error", Toast.LENGTH_SHORT).show();
+      rtmpCamera1.stopStream();
+      startStopButton.setText(R.string.start_button);
     });
   }
 
   @Override
   public void onAuthSuccessRtmp() {
-    runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        Toast.makeText(ExampleRtmpActivity.this, "Auth success", Toast.LENGTH_SHORT).show();
-      }
-    });
+    runOnUiThread(() -> Toast.makeText(ExampleRtmpActivity.this, "Auth success", Toast.LENGTH_SHORT).show());
   }
 
   @Override
@@ -150,7 +172,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
       if (!rtmpCamera1.isStreaming()) {
         if (rtmpCamera1.isRecording()
                 || rtmpCamera1.prepareAudio() && rtmpCamera1.prepareVideo()) {
-          button.setText(R.string.stop_button);
+          startStopButton.setText(R.string.stop_button);
           rtmpCamera1.startStream(etUrl.getText().toString());
 //          rtmpCamera1.startStream("rtmp://145.49.6.220:1935/live/STREAM_NAME2");
         } else {
@@ -158,7 +180,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
                   Toast.LENGTH_SHORT).show();
         }
       } else {
-        button.setText(R.string.start_button);
+        startStopButton.setText(R.string.start_button);
         rtmpCamera1.stopStream();
       }
     } else if (id == R.id.switch_camera) {
@@ -167,127 +189,16 @@ public class ExampleRtmpActivity extends AppCompatActivity
       } catch (CameraOpenException e) {
         Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
       }
-    } else if (id == R.id.b_record) {
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-        if (!rtmpCamera1.isRecording()) {
-          try {
-            if (!folder.exists()) {
-              folder.mkdir();
-            }
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-            currentDateAndTime = sdf.format(new Date());
-            if (!rtmpCamera1.isStreaming()) {
-              if (rtmpCamera1.prepareAudio() && rtmpCamera1.prepareVideo()) {
-                rtmpCamera1.startRecord(
-                        folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-                bRecord.setText(R.string.stop_record);
-                Toast.makeText(this, "Recording... ", Toast.LENGTH_SHORT).show();
-              } else {
-                Toast.makeText(this, "Error preparing stream, This device cant do it",
-                        Toast.LENGTH_SHORT).show();
-              }
-            } else {
-              rtmpCamera1.startRecord(
-                      folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-              bRecord.setText(R.string.stop_record);
-              Toast.makeText(this, "Recording... ", Toast.LENGTH_SHORT).show();
-            }
-          } catch (IOException e) {
-            rtmpCamera1.stopRecord();
-            PathUtils.updateGallery(this, folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-            bRecord.setText(R.string.start_record);
-            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-          }
-        } else {
-          rtmpCamera1.stopRecord();
-          PathUtils.updateGallery(this, folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-          bRecord.setText(R.string.start_record);
-          Toast.makeText(this,
-                  "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
-                  Toast.LENGTH_SHORT).show();
+    } else if (id == R.id.send_button) {
+        String message = chatInput.getText().toString().trim();
+        if (TextUtils.isEmpty(message)) {
+          return;
         }
-      } else {
-        Toast.makeText(this, "You need min JELLY_BEAN_MR2(API 18) for do it...",
-                Toast.LENGTH_SHORT).show();
-      }
+
+        chatInput.setText("");
+        mSocket.emit("message", message);
     }
   }
-
-
-//  @Override
-//  public void onClick(View view) {
-//    switch (view.getId()) {
-//      case R.id.b_start_stop:
-//        if (!rtmpCamera1.isStreaming()) {
-//          if (rtmpCamera1.isRecording()
-//              || rtmpCamera1.prepareAudio() && rtmpCamera1.prepareVideo()) {
-//            button.setText(R.string.stop_button);
-//            rtmpCamera1.startStream(etUrl.getText().toString());
-//          } else {
-//            Toast.makeText(this, "Error preparing stream, This device cant do it",
-//                Toast.LENGTH_SHORT).show();
-//          }
-//        } else {
-//          button.setText(R.string.start_button);
-//          rtmpCamera1.stopStream();
-//        }
-//        break;
-//      case R.id.switch_camera:
-//        try {
-//          rtmpCamera1.switchCamera();
-//        } catch (CameraOpenException e) {
-//          Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-//        }
-//        break;
-//      case R.id.b_record:
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-//          if (!rtmpCamera1.isRecording()) {
-//            try {
-//              if (!folder.exists()) {
-//                folder.mkdir();
-//              }
-//              SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault());
-//              currentDateAndTime = sdf.format(new Date());
-//              if (!rtmpCamera1.isStreaming()) {
-//                if (rtmpCamera1.prepareAudio() && rtmpCamera1.prepareVideo()) {
-//                  rtmpCamera1.startRecord(
-//                      folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-//                  bRecord.setText(R.string.stop_record);
-//                  Toast.makeText(this, "Recording... ", Toast.LENGTH_SHORT).show();
-//                } else {
-//                  Toast.makeText(this, "Error preparing stream, This device cant do it",
-//                      Toast.LENGTH_SHORT).show();
-//                }
-//              } else {
-//                rtmpCamera1.startRecord(
-//                    folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-//                bRecord.setText(R.string.stop_record);
-//                Toast.makeText(this, "Recording... ", Toast.LENGTH_SHORT).show();
-//              }
-//            } catch (IOException e) {
-//              rtmpCamera1.stopRecord();
-//              PathUtils.updateGallery(this, folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-//              bRecord.setText(R.string.start_record);
-//              Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
-//            }
-//          } else {
-//            rtmpCamera1.stopRecord();
-//            PathUtils.updateGallery(this, folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-//            bRecord.setText(R.string.start_record);
-//            Toast.makeText(this,
-//                "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
-//                Toast.LENGTH_SHORT).show();
-//          }
-//        } else {
-//          Toast.makeText(this, "You need min JELLY_BEAN_MR2(API 18) for do it...",
-//              Toast.LENGTH_SHORT).show();
-//        }
-//        break;
-//      default:
-//        break;
-//    }
-//  }
-
   @Override
   public void surfaceCreated(SurfaceHolder surfaceHolder) {
 
@@ -300,19 +211,44 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
   @Override
   public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && rtmpCamera1.isRecording()) {
+    if (rtmpCamera1.isRecording()) {
       rtmpCamera1.stopRecord();
       PathUtils.updateGallery(this, folder.getAbsolutePath() + "/" + currentDateAndTime + ".mp4");
-      bRecord.setText(R.string.start_record);
       Toast.makeText(this,
           "file " + currentDateAndTime + ".mp4 saved in " + folder.getAbsolutePath(),
           Toast.LENGTH_SHORT).show();
       currentDateAndTime = "";
     }
+
     if (rtmpCamera1.isStreaming()) {
       rtmpCamera1.stopStream();
-      button.setText(getResources().getString(R.string.start_button));
+      startStopButton.setText(getResources().getString(R.string.start_button));
     }
+
+    mSocket.disconnect();
+    mSocket.off("message-broadcast", onNewMessage);
+
     rtmpCamera1.stopPreview();
   }
+
+  private Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
+    JSONObject data = (JSONObject) args[0];
+    System.out.println(data);
+    String username;
+    String message;
+    try {
+      username = data.getString("username");
+      message = data.getString("message");
+    } catch (JSONException e) {
+      return;
+    }
+
+    addMessage(username, message);
+  });
+
+  private void addMessage(String username, String message) {
+    mMessages.add(message);
+    chatAdapter.notifyItemInserted(mMessages.size() - 1);
+  }
 }
+

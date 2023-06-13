@@ -60,7 +60,6 @@ import static android.os.Build.VERSION_CODES.JELLY_BEAN_MR2;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 import com.example.streamapplication.defaultexample.ExampleRtmpActivity;
-import com.example.streamapplication.defaultexample.ExampleRtspActivity;
 import com.example.streamapplication.utils.*;
 import com.pedro.rtsp.BuildConfig;
 
@@ -111,8 +110,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         activities = new ArrayList<>();
         activities.add(new ActivityLink(new Intent(this, ExampleRtmpActivity.class),
                 getString(R.string.default_rtmp), JELLY_BEAN));
-        activities.add(new ActivityLink(new Intent(this, ExampleRtspActivity.class),
-                getString(R.string.default_rtsp), JELLY_BEAN));
     }
 
     private void setListAdapter(List<ActivityLink> activities) {
@@ -167,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
     private boolean hasPermissions(Context context, String... permissions) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+        if (context != null && permissions != null) {
             for (String permission : permissions) {
                 if (ActivityCompat.checkSelfPermission(context, permission)
                         != PackageManager.PERMISSION_GRANTED) {
