@@ -30,6 +30,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,6 +68,8 @@ import com.pedro.rtsp.BuildConfig;
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private GridView list;
+
+    private Button btn;
     private List<ActivityLink> activities;
 
     private final String[] PERMISSIONS = {
@@ -88,9 +91,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         TextView tvVersion = findViewById(R.id.tv_version);
         tvVersion.setText(getString(R.string.version, BuildConfig.VERSION_NAME));
 
-        list = findViewById(R.id.list);
-        createList();
-        setListAdapter(activities);
+//        list = findViewById(R.id.list);
+//        createList();
+//        setListAdapter(activities);
+        btn = findViewById(R.id.tv_start_streaming);
         requestPermissions();
     }
 
@@ -106,19 +110,19 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
-    @SuppressLint("NewApi")
-    private void createList() {
-        activities = new ArrayList<>();
-        activities.add(new ActivityLink(new Intent(this, ExampleRtmpActivity.class),
-                getString(R.string.default_rtmp), JELLY_BEAN));
-        activities.add(new ActivityLink(new Intent(this, ExampleRtspActivity.class),
-                getString(R.string.default_rtsp), JELLY_BEAN));
-    }
+//    @SuppressLint("NewApi")
+//    private void createList() {
+//        activities = new ArrayList<>();
+//        activities.add(new ActivityLink(new Intent(this, ExampleRtmpActivity.class),
+//                getString(R.string.default_rtmp), JELLY_BEAN));
+//        activities.add(new ActivityLink(new Intent(this, ExampleRtspActivity.class),
+//                getString(R.string.default_rtsp), JELLY_BEAN));
+//    }
 
-    private void setListAdapter(List<ActivityLink> activities) {
-        list.setAdapter(new ImageAdapter(activities));
-        list.setOnItemClickListener(this);
-    }
+//    private void setListAdapter(List<ActivityLink> activities) {
+//        list.setAdapter(new ImageAdapter(activities));
+//        list.setOnItemClickListener(this);
+//    }
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {

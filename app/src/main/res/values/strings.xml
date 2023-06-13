@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">RTMP-RTSP Streamer</string>
+  <string name="app_name">The Circle</string>
   <string name="version">Version: %1$s</string>
 
   <string name="rtsp_streamer">Custom RTSP</string>
@@ -19,7 +19,9 @@
   <string name="cube_test_rtmp">Cube test RTMP</string>
   <string name="rotation_rtmp">Rotation RTMP</string>
 
-  <string name="tv_select">Select your streamer</string>
+  <string name="tv_welcome">Welcome Circle Streamer</string>
+  <string name="tv_select">Start Streaming!</string>
+  <string name="tv_stream">Go!</string>
   <string name="hint_rtsp">rtsp://yourendpoint</string>
   <string name="hint_rtmp">rtmp://yourendpoint</string>
   <string name="start_button">Start stream</string>
