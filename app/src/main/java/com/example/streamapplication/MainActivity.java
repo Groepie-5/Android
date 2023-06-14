@@ -92,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         overridePendingTransition(R.transition.slide_in, R.transition.slide_out);
         TextView tvVersion = findViewById(R.id.tv_version);
         tvVersion.setText(getString(R.string.version, BuildConfig.VERSION_NAME));
-        getSupportActionBar().hide();
 
 //        list = findViewById(R.id.list);
 //        createList();

@@ -80,7 +80,6 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
     Toast toast = Toast.makeText(this /* MyActivity */, "Your streamername is: "+ streamerName + "\n Your Secretkey is: "+ secretKey, Toast.LENGTH_LONG);
     toast.show();
-    getSupportActionBar().hide();
   }
 
   @Override
