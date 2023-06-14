@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -31,6 +32,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.streamapplication.ChatAdapter;
+import com.example.streamapplication.models.Message;
+import com.google.gson.Gson;
 import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.rtmp.utils.ConnectCheckerRtmp;
 import com.pedro.rtplibrary.rtmp.RtmpCamera1;
@@ -56,13 +59,14 @@ public class ExampleRtmpActivity extends AppCompatActivity
   private Button startStopButton;
   private Button sendButton;
   private RecyclerView chatBox;
-  private ArrayList<String> mMessages;
+  private ArrayList<Message> mMessages;
+  private Gson gson = new Gson();
   protected ChatAdapter chatAdapter;
 
   private Socket mSocket;
   {
     try {
-      mSocket = IO.socket("http://145.49.2.224:3000/");
+      mSocket = IO.socket("http://145.49.6.101:3000");
     } catch (URISyntaxException e) {
       System.out.println(e);
     }
@@ -190,13 +194,15 @@ public class ExampleRtmpActivity extends AppCompatActivity
         Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
       }
     } else if (id == R.id.send_button) {
-        String message = chatInput.getText().toString().trim();
-        if (TextUtils.isEmpty(message)) {
+        String messageText = chatInput.getText().toString().trim();
+        if (TextUtils.isEmpty(messageText)) {
           return;
         }
 
+        //TODO: Replace Jane with dynamic sender
+        Message message = new Message(messageText, "Jane");
+        mSocket.emit("message", gson.toJson(message));
         chatInput.setText("");
-        mSocket.emit("message", message);
     }
   }
   @Override
@@ -231,24 +237,15 @@ public class ExampleRtmpActivity extends AppCompatActivity
     rtmpCamera1.stopPreview();
   }
 
-  private Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
-    JSONObject data = (JSONObject) args[0];
-    System.out.println(data);
-    String username;
-    String message;
-    try {
-      username = data.getString("username");
-      message = data.getString("message");
-    } catch (JSONException e) {
-      return;
-    }
-
-    addMessage(username, message);
-  });
-
-  private void addMessage(String username, String message) {
+  private void addMessage(Message message) {
     mMessages.add(message);
     chatAdapter.notifyItemInserted(mMessages.size() - 1);
   }
+
+  private Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
+    Message message = gson.fromJson(args[0].toString(), Message.class);
+    Log.d("SOCKET", message.messageText);
+    addMessage(message);
+  });
 }
 

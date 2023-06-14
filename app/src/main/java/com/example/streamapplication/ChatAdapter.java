@@ -6,11 +6,13 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.streamapplication.models.Message;
+
 import java.util.ArrayList;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
-    private ArrayList<String> messages;
+    private final ArrayList<Message> messages;
 
     /**
      * Provide a reference to the type of views that you are using
@@ -37,7 +39,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
      * @param dataSet String[] containing the data to populate views to be used
      * by RecyclerView
      */
-    public ChatAdapter(ArrayList<String> dataSet) {
+    public ChatAdapter(ArrayList<Message> dataSet) {
         messages = dataSet;
     }
 
@@ -57,7 +59,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.getTextView().setText(messages.get(position));
+        viewHolder.getTextView().setText(messages.get(position).messageText);
     }
 
     // Return the size of your dataset (invoked by the layout manager)
