@@ -40,9 +40,6 @@ import com.pedro.rtplibrary.rtmp.RtmpCamera1;
 import com.example.streamapplication.R;
 import com.example.streamapplication.utils.PathUtils;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -51,16 +48,16 @@ import io.socket.emitter.Emitter;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ExampleRtmpActivity extends AppCompatActivity
     implements ConnectCheckerRtmp, View.OnClickListener, SurfaceHolder.Callback {
 
   private RtmpCamera1 rtmpCamera1;
   private Button startStopButton;
-  private Button sendButton;
   private RecyclerView chatBox;
   private ArrayList<Message> mMessages;
-  private Gson gson = new Gson();
+  private final Gson gson = new Gson();
   protected ChatAdapter chatAdapter;
 
   private Socket mSocket;
@@ -92,7 +89,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
     startStopButton = findViewById(R.id.b_start_stop);
     startStopButton.setOnClickListener(this);
 
-    sendButton = findViewById(R.id.send_button);
+    Button sendButton = findViewById(R.id.send_button);
     sendButton.setOnClickListener(this);
 
     chatBox = findViewById(R.id.chat_box);
@@ -200,7 +197,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
         }
 
         //TODO: Replace Jane with dynamic sender
-        Message message = new Message(messageText, "Jane");
+        Message message = new Message(messageText, "Jane", new Date());
         mSocket.emit("message", gson.toJson(message));
         chatInput.setText("");
     }
@@ -236,14 +233,12 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
     rtmpCamera1.stopPreview();
   }
-
   private void addMessage(Message message) {
     mMessages.add(message);
     chatAdapter.notifyItemInserted(mMessages.size() - 1);
     chatBox.scrollToPosition(chatAdapter.getItemCount() - 1);
   }
-
-  private Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
+  private final Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
     Message message = gson.fromJson(args[0].toString(), Message.class);
     Log.d("SOCKET", message.messageText);
     addMessage(message);
