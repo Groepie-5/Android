@@ -19,17 +19,24 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
      * (custom ViewHolder)
      */
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        private final TextView textView;
+        private final TextView messageText;
+        private final TextView messageSender;
 
         public ViewHolder(View view) {
             super(view);
             // Define click listener for the ViewHolder's View
 
-            textView = (TextView) view.findViewById(R.id.textView);
+            messageSender = (TextView) view.findViewById(R.id.message_sender);
+            messageText = (TextView) view.findViewById(R.id.message_text);
+        }
+        public void setSender(String username) {
+            if (null == messageSender) return;
+            messageSender.setText(username);
         }
 
-        public TextView getTextView() {
-            return textView;
+        public void setMessage(String message) {
+            if (null == messageText) return;
+            messageText.setText(message);
         }
     }
 
@@ -56,10 +63,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     // Replace the contents of a view (invoked by the layout manager)
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, final int position) {
-
-        // Get element from your dataset at this position and replace the
-        // contents of the view with that element
-        viewHolder.getTextView().setText(messages.get(position).messageText);
+        Message message = messages.get(position);
+        viewHolder.setMessage(message.getMessageText());
+        viewHolder.setSender(message.getSender());
     }
 
     // Return the size of your dataset (invoked by the layout manager)

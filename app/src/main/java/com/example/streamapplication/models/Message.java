@@ -8,4 +8,12 @@ public class Message {
         this.messageText = messageText;
         this.sender = sender;
     }
+
+    public String getMessageText() {
+        return messageText;
+    }
+
+    public String getSender() {
+        return sender;
+    }
 }

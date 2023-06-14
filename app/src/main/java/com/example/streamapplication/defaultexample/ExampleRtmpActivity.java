@@ -240,6 +240,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
   private void addMessage(Message message) {
     mMessages.add(message);
     chatAdapter.notifyItemInserted(mMessages.size() - 1);
+    chatBox.scrollToPosition(chatAdapter.getItemCount() - 1);
   }
 
   private Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
