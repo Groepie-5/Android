@@ -33,6 +33,8 @@ import android.widget.Toast;
 
 import com.example.streamapplication.ChatAdapter;
 import com.example.streamapplication.models.Message;
+import com.example.streamapplication.models.TransparantPerson;
+import com.example.streamapplication.models.TruYouAccount;
 import com.google.gson.Gson;
 import com.pedro.encoder.input.video.CameraOpenException;
 import com.pedro.rtmp.utils.ConnectCheckerRtmp;
@@ -196,10 +198,14 @@ public class ExampleRtmpActivity extends AppCompatActivity
           return;
         }
 
-        //TODO: Replace Jane with dynamic sender
-        Message message = new Message(messageText, "Jane", new Date());
+        //TODO: Replace with dynamic sender and receiver
+        TransparantPerson receiver = new TransparantPerson(0, "Kaas");
+        TruYouAccount sender = new TruYouAccount(1, "Jan");
+        Message message = new Message(messageText, sender, receiver, new Date());
+
         mSocket.emit("message", gson.toJson(message));
         chatInput.setText("");
+        addMessage(message);
     }
   }
   @Override
@@ -240,7 +246,6 @@ public class ExampleRtmpActivity extends AppCompatActivity
   }
   private final Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
     Message message = gson.fromJson(args[0].toString(), Message.class);
-    Log.d("SOCKET", message.messageText);
     addMessage(message);
   });
 }

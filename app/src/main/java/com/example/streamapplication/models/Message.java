@@ -4,12 +4,15 @@ import java.util.Date;
 
 public class Message {
     public String messageText;
-    public String sender;
+    public TruYouAccount sender;
+
+    public TransparantPerson receiver;
     public Date timestamp;
 
-    public Message(String messageText, String sender, Date timestamp) {
+    public Message(String messageText, TruYouAccount sender, TransparantPerson receiver, Date timestamp) {
         this.messageText = messageText;
         this.sender = sender;
+        this.receiver = receiver;
         this.timestamp = timestamp;
     }
 
@@ -18,10 +21,14 @@ public class Message {
     }
 
     public String getSender() {
-        return sender;
+        return sender.name;
     }
 
     public Date getTimestamp() {
         return timestamp;
+    }
+
+    public String getReceiver() {
+        return receiver.name;
     }
 }
