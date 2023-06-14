@@ -20,6 +20,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -123,11 +125,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         secretKeyBox.setHint("Secret Key");
         layout.addView(secretKeyBox); // Another add method
         authenticate.setView(layout);
+        SharedPreferences userInfo = this.getSharedPreferences("application", Context.MODE_PRIVATE);
+        String storedName = userInfo.getString("NAME", null);
+        String storedKey = userInfo.getString("KEY", null);
+        if (!(storedName == null) && !(storedKey == null)) {
+            nameBox.setText(storedName);
+            secretKeyBox.setText(storedKey);
+        }
         authenticate.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 String streamerName = nameBox.getText().toString();
                 String secretKey = secretKeyBox.getText().toString();
+                SharedPreferences.Editor editor = userInfo.edit();
+                editor.putString("NAME", streamerName);
+                editor.putString("KEY", secretKey);
+                editor.apply();
 
                 if (streamerName.equals("bob") && secretKey.equals("geheim")) {
 
