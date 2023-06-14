@@ -42,11 +42,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".defaultexample.ExampleRtspActivity"
-            android:label="@string/default_rtsp"
-            android:screenOrientation="portrait"
-            />
-        <activity
             android:name=".defaultexample.ExampleRtmpActivity"
             android:label="@string/default_rtmp"
             android:screenOrientation="portrait"
