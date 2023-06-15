@@ -16,15 +16,20 @@
 
 package com.example.streamapplication.defaultexample;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -34,7 +39,10 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.streamapplication.ChatAdapter;
+import com.example.streamapplication.MainActivity;
+import com.example.streamapplication.RetrofitAPI;
 import com.example.streamapplication.models.Message;
+import com.example.streamapplication.models.StreamSession;
 import com.example.streamapplication.models.TransparantPerson;
 import com.example.streamapplication.models.TruYouAccount;
 import com.google.gson.Gson;
@@ -47,6 +55,11 @@ import com.example.streamapplication.utils.PathUtils;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 import java.io.File;
@@ -181,6 +194,73 @@ public class ExampleRtmpActivity extends AppCompatActivity
   public void onClick(View view) {
     int id = view.getId();
     if (id == R.id.b_start_stop) {
+
+      final AlertDialog dialogBuilder = new AlertDialog.Builder(this).create();
+      LayoutInflater inflater = this.getLayoutInflater();
+      View dialogView = inflater.inflate(R.layout.streamsession_view, null);
+
+      final EditText editText = (EditText) dialogView.findViewById(R.id.tagline);
+      Button btn_submit = (Button) dialogView.findViewById(R.id.btn_submit);
+      Button btn_cancel = (Button) dialogView.findViewById(R.id.btn_cancel);
+
+      SharedPreferences userInfo = this.getSharedPreferences("application", Context.MODE_PRIVATE);
+      String storedName = userInfo.getString("NAME", null);
+      String storedStreamTitle = userInfo.getString("STREAM-TITLE", null);
+
+      Retrofit retrofit = new Retrofit.Builder()
+              .baseUrl("http://localhost:8000/") // Replace with your API's base URL
+              .addConverterFactory(GsonConverterFactory.create())
+              .build();
+
+      RetrofitAPI apiService = retrofit.create(RetrofitAPI.class);
+
+      StreamSession streamSession = new StreamSession(
+              storedName,
+              storedStreamTitle
+      );
+
+      if(storedStreamTitle != null){
+        editText.setText(storedStreamTitle);
+      }
+
+      btn_submit.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          //todo: check if usernamehash = usernamehash = auth = ja
+
+          SharedPreferences.Editor editor = userInfo.edit();
+          editor.putString("STREAM-TITLE", editText.toString());
+          //post/put req change user Stream title
+          Call<StreamSession> call = apiService.updateData(streamSession);
+          call.enqueue(new Callback<StreamSession>() {
+            @Override
+            public void onResponse(Call<StreamSession> call, Response<StreamSession> response) {
+              // Handle successful response
+              if (response.isSuccessful()) {
+                // Request successful, handle response here
+              } else {
+                // Request failed, handle error here
+              }
+            }
+            @Override
+            public void onFailure(Call<StreamSession> call, Throwable t) {
+              // Handle network failure
+            }
+          });
+          dialogBuilder.dismiss();
+        }
+      });
+
+      btn_cancel.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          dialogBuilder.dismiss();
+        }
+      });
+
+      dialogBuilder.setView(dialogView);
+      dialogBuilder.show();
+
       if (!rtmpCamera1.isStreaming()) {
         if (rtmpCamera1.isRecording()
                 || rtmpCamera1.prepareAudio() && rtmpCamera1.prepareVideo()) {
@@ -217,6 +297,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
         addMessage(message);
     }
   }
+
   @Override
   public void surfaceCreated(SurfaceHolder surfaceHolder) {
 
