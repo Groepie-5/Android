@@ -8,6 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/message_sender"
+        android:textColor="@color/black"
         android:padding="5dp"
         android:textSize="19sp"/>
 
@@ -17,5 +18,6 @@
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:paddingStart="5sp"
-        android:text="@string/chat_message"/>
+        android:text="@string/chat_message"
+        android:textColor="@color/black"/>
 </LinearLayout>

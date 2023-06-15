@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_example_rtmp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
   <SurfaceView
       android:id="@+id/surfaceView"
@@ -71,7 +72,9 @@
       android:layout_marginStart="16dp"
       android:ems="10"
       android:hint="Write a message..."
+      android:textColorHint="#8E8E8E"
       android:inputType="text"
+      android:textColor="@color/black"
       app:layout_constraintBottom_toBottomOf="parent"
       app:layout_constraintEnd_toStartOf="@+id/send_button"
       app:layout_constraintStart_toStartOf="parent"
