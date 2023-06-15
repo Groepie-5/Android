@@ -216,7 +216,6 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
       RetrofitAPI apiService = retrofit.create(RetrofitAPI.class);
 
-      //todo: HASH IT
       String HashedName = hashString(storedName);
       String HashedTitle = hashString(storedStreamTitle);
       StreamSession streamSession = new StreamSession(
@@ -231,8 +230,6 @@ public class ExampleRtmpActivity extends AppCompatActivity
       btn_submit.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-          //todo: check if usernamehash = usernamehash = auth = ja
-
           SharedPreferences.Editor editor = userInfo.edit();
           editor.putString("STREAM-TITLE", editText.toString());
           //post/put req change user Stream title
