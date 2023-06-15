@@ -66,6 +66,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class ExampleRtmpActivity extends AppCompatActivity
     implements ConnectCheckerRtmp, View.OnClickListener, SurfaceHolder.Callback {
@@ -214,9 +216,12 @@ public class ExampleRtmpActivity extends AppCompatActivity
 
       RetrofitAPI apiService = retrofit.create(RetrofitAPI.class);
 
+      //todo: HASH IT
+      String HashedName = hashString(storedName);
+      String HashedTitle = hashString(storedStreamTitle);
       StreamSession streamSession = new StreamSession(
-              storedName,
-              storedStreamTitle
+              HashedName,
+              HashedTitle
       );
 
       if(storedStreamTitle != null){
@@ -297,6 +302,34 @@ public class ExampleRtmpActivity extends AppCompatActivity
         addMessage(message);
     }
   }
+
+    public static String hashString(String input) {
+      try {
+        // Create SHA-256 MessageDigest instance
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+
+        // Convert the input string to bytes
+        byte[] inputBytes = input.getBytes();
+
+        // Compute the hash value
+        byte[] hashBytes = digest.digest(inputBytes);
+
+        // Convert the hash bytes to a hexadecimal string
+        StringBuilder builder = new StringBuilder();
+        for (byte b : hashBytes) {
+          builder.append(String.format("%02x", b));
+        }
+
+        return builder.toString();
+      } catch (NoSuchAlgorithmException e) {
+        // Handle the exception
+        e.printStackTrace();
+      }
+
+      return null;
+    }
+
+
 
   @Override
   public void surfaceCreated(SurfaceHolder surfaceHolder) {
