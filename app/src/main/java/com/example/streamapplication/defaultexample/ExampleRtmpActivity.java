@@ -85,7 +85,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
   private Socket mSocket;
   {
     try {
-      mSocket = IO.socket("http://145.49.7.163:3000");
+      mSocket = IO.socket("http://145.49.21.153:3000");
     } catch (URISyntaxException e) {
       System.out.println(e);
     }
@@ -140,6 +140,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
     toast.show();
 
     mSocket.on("message-broadcast", onNewMessage);
+    mSocket.on("valid-message", onRejectedMessage);
     mSocket.connect();
   }
 
@@ -237,7 +238,8 @@ public class ExampleRtmpActivity extends AppCompatActivity
       } catch (Exception e) {
         throw new RuntimeException(e);
       }
-      Log.e("KANKERHOER",gson.toJson(message));
+      Log.e("TESTER1234",gson.toJson(message));
+      Log.e("TESTER1234","Nee Man");
 
 
       mSocket.emit("message", gson.toJson(message));
@@ -314,7 +316,7 @@ public class ExampleRtmpActivity extends AppCompatActivity
   public String getNonce(String sender) {
     try {
       // Specify the URL endpoint
-      URL url = new URL("http://145.49.7.163:3000/api/crypto/nonce");
+      URL url = new URL("http://145.49.21.153:3000/api/crypto/nonce");
 
       // Create the HttpURLConnection object
       HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -404,6 +406,17 @@ public class ExampleRtmpActivity extends AppCompatActivity
   private final Emitter.Listener onNewMessage = args -> runOnUiThread(() -> {
     Message message = gson.fromJson(args[0].toString(), Message.class);
     addMessage(message);
+  });
+  private final Emitter.Listener onRejectedMessage = args -> runOnUiThread(() -> {
+    Log.e("TESTER1234","Yippie");
+    String validMessageText = args[0].toString();
+    Log.e("TESTER1234",validMessageText);
+    boolean validMessage = Boolean.parseBoolean(validMessageText);
+    if (!validMessage) {
+      Log.e("TESTER1234","Invalid Message");
+      Toast toast = Toast.makeText(this, "Your message was rejected tue to improper authentication.", Toast.LENGTH_LONG);
+      toast.show();
+    }
   });
 }
 
