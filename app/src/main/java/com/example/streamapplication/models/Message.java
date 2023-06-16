@@ -9,6 +9,8 @@ public class Message {
     public TransparantPerson receiver;
     public Date timestamp;
 
+    public String signature;
+
     public Message(String messageText, TruYouAccount sender, TransparantPerson receiver, Date timestamp) {
         this.messageText = messageText;
         this.sender = sender;
@@ -30,5 +32,13 @@ public class Message {
 
     public String getReceiver() {
         return receiver.name;
+    }
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
     }
 }
